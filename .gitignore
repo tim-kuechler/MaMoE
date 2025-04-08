@@ -157,3 +157,5 @@ configs/local/default.yaml
 
 
 # Project
+MaMoE.egg-info
+DM_Training.egg-info

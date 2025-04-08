@@ -126,7 +126,7 @@ Before training you need to prepare a few things:
 8. Define your dataset. Create a new `configs/data/<your_dataset_name>.yaml` for your dataset. Take `cityscapes.yaml` as
     an example.
 9. Create your own experiment config in `configs/experiment/<your_experiment_name>.yaml`. See `experiment_demo.yaml` as
-    an example. For multi-gpu training overwrite the `gpus:` variable that is set to 1 in `base_experiment.yaml`.
+    an example. For multi-gpu training overwrite the `devices:` variable that is set to 1 in `base_experiment.yaml`.
 10. Start the training with e.g. 
     `CUDA_VISIBLE_DEVICES=0 python train.py data=<your_dataset_name> experiment=<your_experiment_name>`
 11. If you want to debug the program consider adding `debug=<default/data_parallel/limit/...>` as defined in 
