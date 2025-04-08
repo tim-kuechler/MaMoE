@@ -9,10 +9,6 @@ from tqdm import tqdm
 from typing_extensions import override
 
 from dmt.models import UNetWrapper, VaeWrapper, PerceptualFeatureExtractor
-from dmt.models.mamoe.cross_attention.load_cross_attention_data import load_cross_attention_data
-from dmt.models.mamoe.cross_attention.masked_attention import setup_region_masked_attn
-from dmt.models.mamoe.moe.load_moe_data import load_moe_data
-from dmt.models.mamoe.moe.moe import setup_moe
 from dmt.utils import (
     RankedLogger,
     compute_generator_loss,
@@ -50,20 +46,6 @@ class LitBaseModule(LightningModule):
         gradient_checkpointing: bool = False,
         allow_tf32: bool = True,
         matmul_precision: Optional[str] = "high",
-        # MoE
-        moe: bool = False,
-        moe_data_loading: Optional[str] = None,
-        num_experts: int = 2,
-        moe_layers: List[int] = [],  # Empty means all layers
-        # Region masked cross attn
-        region_masked_attn: bool = False,
-        panoptic_map_dir: str = None,
-        resizing_mode: str = "nearest",
-        pool_threshold: float = 0.5,
-        attn_data_loading: Optional[str] = None,
-        encoder_padding: bool = False,
-        add_dataset_name: bool = True,
-        global_prompts: bool = False,
     ) -> None:
         super().__init__()
 
@@ -71,40 +53,6 @@ class LitBaseModule(LightningModule):
         self.vae_wrapper = vae
         self.partial_optimizer = optimizer
         self.partial_scheduler = scheduler
-
-        # MoE
-        self.moe = moe
-        if moe:
-            assert resizing_mode in ("nearest", "avg_pool")
-            assert moe_data_loading is not None
-            assert panoptic_map_dir is not None
-            self.moe_data_loading = moe_data_loading
-            assert ((num_experts == 2 and moe_data_loading == "panoptic_cs_things")
-                    or (num_experts == 10 and moe_data_loading == "panoptic_cs_extreme")
-                    or (num_experts == 5 and moe_data_loading == "panoptic_cs_extreme_things"))
-            self.num_experts = num_experts
-            self.moe_layers = list(moe_layers)
-            self.panoptic_map_dir = panoptic_map_dir
-            self.resizing_mode = resizing_mode
-            self.pool_threshold = pool_threshold
-
-            setup_moe(self.unet_wrapper.unet, num_experts, self.moe_layers)
-
-        # Region masked cross attn
-        self.region_masked_attn = region_masked_attn
-        if region_masked_attn:
-            assert resizing_mode in ("nearest", "avg_pool")
-            assert attn_data_loading is not None
-            assert panoptic_map_dir is not None
-            self.panoptic_map_dir = panoptic_map_dir
-            self.resizing_mode = resizing_mode
-            self.pool_threshold = pool_threshold
-            self.attn_data_loading = attn_data_loading
-            self.encoder_padding = encoder_padding
-            self.add_dataset_name = add_dataset_name
-            self.global_prompts = global_prompts
-
-            setup_region_masked_attn(self.unet_wrapper.unet)
 
         self.loss_type = loss_type
         self.snr_gamma = snr_gamma
@@ -164,29 +112,6 @@ class LitBaseModule(LightningModule):
     def setup(self, stage: str) -> None:
         """Lightning hook that is called at the beginning of fit and handles basic initialization."""
         if stage == "fit":
-            # MoE additional data loading
-            if self.moe:
-                load_moe_data(
-                    self.trainer.datamodule,
-                    self.moe_data_loading,
-                    self.resizing_mode,
-                    self.panoptic_map_dir,
-                    self.pool_threshold,
-                )
-
-            # Masked attention additional data loading
-            if self.region_masked_attn:
-                load_cross_attention_data(
-                    self.trainer.datamodule,
-                    self.attn_data_loading,
-                    self.encoder_padding,
-                    self.add_dataset_name,
-                    self.resizing_mode,
-                    self.global_prompts,
-                    self.panoptic_map_dir,
-                    self.pool_threshold,
-                )
-
             # Gradient Checkpointing
             if self.gradient_checkpointing:
                 self.vae_wrapper.vae.enable_gradient_checkpointing()

@@ -54,7 +54,6 @@ class BaseDataset(Dataset):
             split: str,
             model_name: Optional[str] = None,
             prompts_file: Optional[str] = None,
-            instance_prompts_file: Optional[str] = None,
             transforms: Optional[Union[List[Transform], Compose]] = None,
     ) -> None:
         super().__init__()
@@ -63,7 +62,6 @@ class BaseDataset(Dataset):
         self.split = split
         self.model_name = model_name
         self.prompts_file = prompts_file
-        self.instance_prompts_file = instance_prompts_file
         self.transforms = self.get_default_transforms() if transforms is None else transforms
 
         # Init image paths for dataset
@@ -76,8 +74,6 @@ class BaseDataset(Dataset):
         # Encode prompts
         if prompts_file is not None:
             self.prepare_prompts()
-        if instance_prompts_file is not None:
-            self.prepare_instance_prompts()
 
     def update_image_paths(self) -> None:
         dataset_split_dir = os.path.join(self.dataset_dir, self.split)
@@ -100,33 +96,6 @@ class BaseDataset(Dataset):
         # Encode prompts
         if self.model_name is not None:
             self.prompts = encode_prompts(self.model_name, self.prompts, True)
-
-    def prepare_instance_prompts(self):
-        """Encodes instance prompts from a json file and add them to the dataset."""
-        assert self.model_name is not None, "Model name required to encode prompts"
-
-        with open(self.instance_prompts_file, 'r', encoding="utf-8") as f:
-            instance_prompt_dict = json.load(f)
-
-        # Flatten into one dict which fill speed up encoding the prompts
-        flattened_instance_prompt_dict = {
-            f"{outer_key}_{inner_key}": inner_value
-            for outer_key, inner_dict in instance_prompt_dict.items()
-            for inner_key, inner_value in inner_dict.items()
-        }
-
-        # Encode prompts
-        flattened_instance_prompt_dict = encode_prompts(self.model_name, flattened_instance_prompt_dict, pad_tokens=False)
-
-        # Reverse the fattening operation
-        instance_prompt_dict = {}
-        for flat_key, value in flattened_instance_prompt_dict.items():
-            outer_key, inner_key = flat_key.rsplit("_", 1)
-            if outer_key not in instance_prompt_dict:
-                instance_prompt_dict[outer_key] = {}
-            instance_prompt_dict[outer_key][int(inner_key)] = value
-
-        self.instance_prompts = instance_prompt_dict
 
     @staticmethod
     def get_default_transforms() -> Compose:

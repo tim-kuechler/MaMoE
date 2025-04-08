@@ -12,5 +12,4 @@ data:
 trainer:
   max_epochs: 10 # Change maximum epochs
 
-model:
-  moe: false # Disable MoE
+# ...

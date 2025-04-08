@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "MaMoE"
+name = "DM-Training"
 version = "1.0"
-description = "Code for MaMoE method."
+description = "Code to train diffusion models using huggingface diffusers"
 authors = [
     { name = "Tim Küchler", email = "tim.kuechler@iwr.uni-heidelberg.de" }
 ]
