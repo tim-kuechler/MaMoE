@@ -130,7 +130,7 @@ def load_panoptic_image(
     """
     image_path = dataset.image_paths[id]
     img_name = os.path.basename(image_path)
-    panoptic_path = os.path.join(panoptic_dir, dataset.split, img_name.replace("image", "panoptic_hrda+mic_all"))  # TODO Remove replace
+    panoptic_path = os.path.join(panoptic_dir, dataset.split)
     panoptic_img = read_image(panoptic_path, ImageReadMode.RGB)
 
     # Crop
