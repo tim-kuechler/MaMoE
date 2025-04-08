@@ -127,9 +127,10 @@ Before training you need to prepare a few things:
     an example.
 9. Create your own experiment config in `configs/experiment/<your_experiment_name>.yaml`. See `experiment_demo.yaml` as
     an example. For multi-gpu training overwrite the `gpus:` variable that is set to 1 in `base_experiment.yaml`.
-10. Start the training with e.g. 
+10. Install this repository into your conda environment with `pip install -e .`.
+11. Start the training with e.g. 
     `CUDA_VISIBLE_DEVICES=0 python train.py data=<your_dataset_name> experiment=<your_experiment_name>`
-11. If you want to debug the program consider adding `debug=<default/data_parallel/limit/...>` as defined in 
+12. If you want to debug the program consider adding `debug=<default/data_parallel/limit/...>` as defined in 
     `configs/debug/` to your command.
 
 ## Inference
