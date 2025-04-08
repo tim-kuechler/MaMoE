@@ -1,0 +1,60 @@
+# @package _global_
+
+# specify here default configuration
+# order of defaults determines the order in which configs override each other
+defaults:
+  - _self_
+  - model: default
+  - data: ???  # Must be set via console
+  - callbacks: default
+  - logger: wandb
+  - trainer: default
+  - hydra: default
+
+  # experiment configs allow for version control of specific hyperparameters
+  # e.g. best hyperparameters for given model and datamodule
+  - experiment: null
+
+  # debugging config (enable through command line, e.g. `python train.py debug=default)
+  - debug: null
+
+# task name, determines output directory path
+task_name: "train"
+
+# tags to help you identify your experiments
+# you can overwrite this in experiment configs
+# overwrite from command line with `python train.py tags="[first_tag, second_tag]"`
+tags: ["dev"]
+
+# seed for random number generators in pytorch, numpy and python.random
+seed: null
+
+########## Extra settings ##########
+
+# disable python warnings if they annoy you
+ignore_warnings: True
+
+# ask user for tags if none are provided in the config
+enforce_tags: False
+
+# pretty print config tree at the start of the run using Rich library
+print_config: True
+
+########## Path settings ##########
+
+# path to root directory
+# this requires PROJECT_ROOT environment variable to exist
+# you can replace it with "." if you want the root to be the current working directory
+root_dir: ${oc.env:PROJECT_ROOT}
+
+# path to logging directory
+log_dir: <where_your_training_runs_will_be_saved>
+
+# path to output directory, created dynamically by hydra
+# path generation pattern is specified in `configs/hydra/default_i2i.yaml`
+# use it to store all files generated during the run, like ckpts and metrics
+output_dir: ${hydra:runtime.output_dir}
+
+# path to working directory
+work_dir: ${hydra:runtime.cwd}
+

@@ -1,0 +1,2 @@
+test_callback:
+  _target_: dmt.utils.callbacks.BaseTestCallback

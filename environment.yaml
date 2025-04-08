@@ -1,0 +1,29 @@
+name: dmt
+
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+  - xformers
+
+dependencies:
+  - python=3.11
+  - pytorch>=2.1
+  - pytorch-cuda
+  - torchmetrics=1.*
+  - torchvision=0.*
+  - diffusers
+  - lightning=2.*
+  - hydra-core=1.*
+  - wandb
+  - rich=13.*
+  - xformers
+  - einops
+
+  - pip:
+      - elatentlpips
+      - ninja
+      - peft
+      - pre-commit
+      - rootutils

@@ -1,0 +1,18 @@
+defaults:
+  - model_checkpoint
+  - model_summary
+  - image_logger
+  - eval_callback
+  - test_callback
+  - _self_
+
+model_checkpoint:
+  dirpath: ${output_dir}/checkpoints
+  filename: "epoch_{epoch:03d}"
+  every_n_epochs: 5
+  save_top_k: -1
+  save_lora: true
+  save_merged: true
+
+model_summary:
+  max_depth: 4

@@ -1,0 +1,9 @@
+# @package _global_
+
+# runs 1 train, 1 validation and 1 test step. Has num_workers > 0.
+
+defaults:
+  - default
+
+data:
+  num_workers: 16

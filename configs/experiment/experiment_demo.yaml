@@ -1,0 +1,16 @@
+# @package _global_
+defaults:
+  - base_experiment
+
+# Every variable from base_experiment (or other top-level configs) can be overwritten here
+
+task_name: experiment_demo # Set experiment name
+
+data:
+  batch_size: 100 # Change batch size to 100
+
+trainer:
+  max_epochs: 10 # Change maximum epochs
+
+model:
+  moe: false # Disable MoE

@@ -1,0 +1,27 @@
+defaults:
+  - default
+
+dataset_dir: /export/data/vislearn/rother_subgroup/tkuechle/datasets/cityscapes/images
+dataset_name: Cityscapes
+
+train_dataset:
+  _target_: dmt.data.BaseDataset
+  dataset_dir: ${data.dataset_dir}
+  dataset_name: ${data.dataset_name}
+  split: train
+  prompts_file: /export/data/vislearn/rother_subgroup/tkuechle/datasets/cityscapes/features/prompts/chatgpt/train/cityscapes_train_chatgpt_prompts_default.csv
+  model_name: ${model.model_name}
+val_dataset:
+  _target_: dmt.data.dataset.BaseDataset
+  dataset_dir: ${data.dataset_dir}
+  dataset_name: ${data.dataset_name}
+  split: val
+  prompts_file: /export/data/vislearn/rother_subgroup/tkuechle/datasets/cityscapes/features/prompts/chatgpt/val/cityscapes_val_chatgpt_prompts_default.csv
+  model_name: ${model.model_name}
+test_dataset:
+  _target_: dmt.data.BaseDataset
+  dataset_dir: ${data.dataset_dir}
+  dataset_name: ${data.dataset_name}
+  split: test
+  prompts_file: /export/data/vislearn/rother_subgroup/tkuechle/datasets/cityscapes/features/prompts/chatgpt/test/cityscapes_test_chatgpt_prompts_default.csv
+  model_name: ${model.model_name}

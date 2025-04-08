@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "MaMoE"
+version = "1.0"
+description = "Code for MaMoE method."
+authors = [
+    { name = "Tim Küchler", email = "tim.kuechler@iwr.uni-heidelberg.de" }
+]
+readme = ""
+license = { text = "" }
+requires-python = ">=3.11"
+urls = { Homepage = "https://github.com/tim-kuechler/MaMoE" }
+
+[tool.setuptools.packages.find]
+where = ["."]

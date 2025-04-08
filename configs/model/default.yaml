@@ -1,0 +1,47 @@
+_target_: dmt.lightning_modules.LitBaseModule
+model_name: stabilityai/stable-diffusion-2-1-base
+
+loss_type: mse
+
+zero_snr: false # if true, prediction type must be v_prediction and timestep_spacing must be trailing
+prediction_type: epsilon # v_prediction (SDXL, SD2.1 V) or epsilon (for SD1.5 or SD2.1 Base)
+timestep_spacing: trailing # or linspace or leading
+
+snr_gamma: null
+
+gradient_accumulation: ${data.gradient_accumulation}
+gradient_checkpointing: false
+allow_tf32: true
+matmul_precision: high
+
+unet:
+  _target_: dmt.models.diffusion.unet.init_unet
+  model_name: ${model.model_name}
+  use_lora: false
+  lora_rank: 128
+  lora_alpha: 128
+  cond_mechanism: none
+  cond_key: pixel_values
+  cn_block_out_channels: [4, 8, 16, 16]
+  cn_attn_head_dim: [1, 1, 2, 2]
+  cn_learn_time: false
+  cn_conditioning_channels: 3
+  only_decoder: false
+  cn_dropout: 0.0
+  txt_dropout: 0.1
+
+vae:
+  _target_: dmt.models.diffusion.vae.init_vae
+  model_name: ${model.model_name}
+
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 2e-5
+  betas: [0.9, 0.999]
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.ConstantLR
+  _partial_: true
+  factor: 1.0
+  total_iters: 999999999

@@ -1,0 +1,108 @@
+# @package _global_
+# These are the default settings for an experiment. For defining individual experiments only overwrite the changing
+#   parameters. Refer to experiment_demo.yaml to see the structure of an individual experiment.
+# In theory every variable that every has been set in other configs can be overwritten. Refer to hydra docs to learn more.
+seed: 100 # A seed for "deterministic" training (not really but results will be similar)
+task_name: experiment_mamoe # Name of the experiment. Will be used in save name for disk and wandb
+
+callbacks:
+  model_checkpoint: # Settings for BaseModelCheckpoint in callbacks.py
+    every_n_epochs: 5
+  image_logger: # Settings for BaseImageLogger in callbacks.py
+    sampling_freq: 2297 # in trainig steps. Adapt to your dataset
+    num_batches: 2
+    sampling_batch_size: 5 # Batch size that is used during samplig. Should be smaller than training bs to avoid OOM.
+    cond: true
+    uncond: true
+    cfg: true
+  eval_callback: # Settings for BaseEvalCallback in callbacks.py
+    eval_freq: 4594 # in trainig steps. Adapt to your dataset
+    eval_cmmd: true
+    eval_fid: false
+    eval_kid: false
+    cond: true
+    uncond: true
+    cfg: true
+    num_images: 75
+    delete_samples: true
+  test_callback: # Settings for BaseTestCallback in callbacks.py
+    eval_cmmd: true
+    eval_fid: true
+    eval_kid: true
+    cond: true
+    uncond: true
+    cfg: true
+
+data: # Here any parameters from lightning_data.py can be set
+  batch_size: 10 # per GPU.
+  gradient_accumulation: 1
+
+  persistent_workers: false # Refer to PyTorch's dataloader documentation
+  pin_memory: false # Refer to PyTorch's dataloader documentation
+  num_workers: 16 # Number of dataloaders
+
+  num_val: 100 # Number of validation images to use for calculating a stable validation loss
+  num_stable_train: 100 # Number of training images to use for calculating a stable training loss
+
+  # Overwrites the default transforms that also include a RandomCrop. Supports any torchvision.transforms.v2 transform
+  train_dataset:
+    transforms:
+      _target_: torchvision.transforms.v2.Compose
+      transforms:
+        - _target_: torchvision.transforms.v2.ToTensor
+        - _target_: torchvision.transforms.v2.Resize
+          size: 512
+          interpolation: 3
+        - _target_: torchvision.transforms.v2.RandomHorizontalFlip
+          p: 0.5
+        - _target_: dmt.data.dataset.DivideValue
+          value: 127.5
+        - _target_: dmt.data.dataset.AddValue
+          value: -1.0
+  val_dataset:
+    transforms: ${data.train_dataset.transforms}
+  test_dataset:
+    transforms: ${data.train_dataset.transforms}
+
+logger: # Here any logger that is supported by pytorch lightning can be set. Most likely only wandb will work correctly with the custom callbacks defined in callbacks.py
+  wandb: # Wandb logger settings. Can be removed if wandb is not used
+    project: mamoe # Name of your wandb project
+    name: ${experiment.task_name} # Same value as set above for task_name
+
+trainer: # Here all parameters for pytorch lightning's Trainer class can be set
+  max_epochs: 40
+  gpus: 1 # Number of GPUs to train on
+  val_check_interval: 0.5 # Calculate stable training loss and validation loss every half epoch
+
+model: # Not complete. Can set any parameter from lightning.py's __init___
+  model_name: stabilityai/stable-diffusion-2-1 # Huggingface repository name for model to fine-tune
+  loss_type: mse # Model loss
+  prediction_type: v_prediction # Model prediction type
+  zero_snr: true # Use ZeroSNR
+
+  gradient_checkpointing: true # Use gradient checkpointing. XFormers is automatically used if installed in conda environment.
+
+  # Class-aware MoE
+  moe: true # If true, use MoE
+  moe_data_loading: panoptic_cs_extreme_things # MoE dataloading as defined in load_moe_data.py
+  num_experts: 5 # Number of experts. Must match moe_data_loading
+
+  # Region masked attn (instance prompts files can be added in the dataset.yaml (see e.g. cityscapes.yaml))
+  region_masked_attn: true # If true, use masked attention for spatial prompting
+  resizing_mode: nearest # Resizing mode to use. Also applies to MoE resizing
+  pool_threshold: 0.5 # Threshold if average pool is used as resizing. Only applies to masked attention. (MoE uses 0.0)
+  attn_data_loading: panoptic_cs_all_prompts # Attention mask loading as defined in load_cross_attention_data.py
+  encoder_padding: false # If false, remove padding of instance prompts
+  add_dataset_name: false # If true, prepend dataset name to global prompts
+  panoptic_map_dir: /export/data/vislearn/rother_subgroup/tkuechle/datasets/cityscapes/features/panoptic/hrda+mic_all # Root directory to panoptic maps. Must include folders named "train", "val" and "test".
+  global_prompts: true # If true add global prompts.
+
+  # unet: Here all parameters to initialize the UNet (e.g. add ControlNet or LoRA) can be set. For possible parameters refer to init_unet(...) in unet.py
+    # ...
+
+  scheduler: # Define the learning rate scheduler to use
+    _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+    _partial_: true
+    T_max: ${trainer.max_epochs} # Same value as set above for trainer
+    eta_min: 0.0
+    last_epoch: -1

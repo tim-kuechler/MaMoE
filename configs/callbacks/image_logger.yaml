@@ -1,0 +1,7 @@
+image_logger:
+  _target_: dmt.utils.callbacks.BaseImageLogger
+  num_batches: 1
+  sampling_batch_size: ${data.batch_size}
+  split: val
+  shuffle: True
+  sampling_freq: 1000

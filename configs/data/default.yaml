@@ -1,0 +1,8 @@
+_target_: dmt.data.lightning_data.LitDataModule
+num_val: 100
+num_stable_train: 100
+gradient_accumulation: 1
+batch_size: 10 # Per device
+num_workers: 16
+persistent_workers: false
+pin_memory: false
