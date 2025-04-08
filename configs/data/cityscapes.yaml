@@ -5,21 +5,21 @@ dataset_dir: /export/data/vislearn/rother_subgroup/tkuechle/datasets/cityscapes/
 dataset_name: Cityscapes
 
 train_dataset:
-  _target_: dmt.data.BaseDataset
+  _target_: mamoe.data.BaseDataset
   dataset_dir: ${data.dataset_dir}
   dataset_name: ${data.dataset_name}
   split: train
   prompts_file: /export/data/vislearn/rother_subgroup/tkuechle/datasets/cityscapes/features/prompts/chatgpt/train/cityscapes_train_chatgpt_prompts_default.csv
   model_name: ${model.model_name}
 val_dataset:
-  _target_: dmt.data.dataset.BaseDataset
+  _target_: mamoe.data.dataset.BaseDataset
   dataset_dir: ${data.dataset_dir}
   dataset_name: ${data.dataset_name}
   split: val
   prompts_file: /export/data/vislearn/rother_subgroup/tkuechle/datasets/cityscapes/features/prompts/chatgpt/val/cityscapes_val_chatgpt_prompts_default.csv
   model_name: ${model.model_name}
 test_dataset:
-  _target_: dmt.data.BaseDataset
+  _target_: mamoe.data.BaseDataset
   dataset_dir: ${data.dataset_dir}
   dataset_name: ${data.dataset_name}
   split: test

@@ -55,9 +55,9 @@ data: # Here any parameters from lightning_data.py can be set
           interpolation: 3
         - _target_: torchvision.transforms.v2.RandomHorizontalFlip
           p: 0.5
-        - _target_: dmt.data.dataset.DivideValue
+        - _target_: mamoe.data.dataset.DivideValue
           value: 127.5
-        - _target_: dmt.data.dataset.AddValue
+        - _target_: mamoe.data.dataset.AddValue
           value: -1.0
   val_dataset:
     transforms: ${data.train_dataset.transforms}
@@ -71,7 +71,7 @@ logger: # Here any logger that is supported by pytorch lightning can be set. Mos
 
 trainer: # Here all parameters for pytorch lightning's Trainer class can be set
   max_epochs: 40
-  gpus: 1 # Number of GPUs to train on
+  devices: 1 # Number of GPUs to train on
   val_check_interval: 0.5 # Calculate stable training loss and validation loss every half epoch
 
 model: # Not complete. Can set any parameter from lightning.py's __init___

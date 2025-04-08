@@ -1,2 +1,2 @@
 test_callback:
-  _target_: dmt.utils.callbacks.BaseTestCallback
+  _target_: mamoe.utils.callbacks.BaseTestCallback

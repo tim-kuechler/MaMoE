@@ -1,2 +1,2 @@
 eval_callback:
-  _target_: dmt.utils.callbacks.BaseEvalCallback
+  _target_: mamoe.utils.callbacks.BaseEvalCallback

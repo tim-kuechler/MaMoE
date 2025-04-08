@@ -1,5 +1,5 @@
 model_checkpoint:
-  _target_: dmt.utils.callbacks.BaseModelCheckpoint
+  _target_: mamoe.utils.callbacks.BaseModelCheckpoint
   dirpath: null # directory to save the model file
   filename: null # checkpoint filename
   monitor: null # name of the logged metric which determines when model is improving

@@ -1,4 +1,4 @@
-_target_: dmt.lightning_modules.LitBaseModule
+_target_: mamoe.lightning_modules.LitBaseModule
 model_name: stabilityai/stable-diffusion-2-1-base
 
 loss_type: mse
@@ -15,7 +15,7 @@ allow_tf32: true
 matmul_precision: high
 
 unet:
-  _target_: dmt.models.diffusion.unet.init_unet
+  _target_: mamoe.models.diffusion.unet.init_unet
   model_name: ${model.model_name}
   use_lora: false
   lora_rank: 128
@@ -31,7 +31,7 @@ unet:
   txt_dropout: 0.1
 
 vae:
-  _target_: dmt.models.diffusion.vae.init_vae
+  _target_: mamoe.models.diffusion.vae.init_vae
   model_name: ${model.model_name}
 
 optimizer:

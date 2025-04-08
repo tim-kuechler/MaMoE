@@ -1,0 +1,1 @@
+from mamoe.lightning_modules.lightning import LitBaseModule

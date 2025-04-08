@@ -34,7 +34,7 @@ MaMoE/
 │   ├── model/          Configs for the model, training loop and UNet
 │   ├── trainer/        Configs for PyTorch Lightning's trainer
 │   └── train.yaml      The root config
-├── dmt/
+├── mamoe/
 │   ├── data/
 │   │   ├── dataset.py          A custom PyTorch dataset loading data structured as described below
 │   │   ├── lightning_data.py   PyTorch Lightning's DataModule responsible for initializing the dataloaders during training
@@ -126,7 +126,7 @@ Before training you need to prepare a few things:
 8. Define your dataset. Create a new `configs/data/<your_dataset_name>.yaml` for your dataset. Take `cityscapes.yaml` as
     an example.
 9. Create your own experiment config in `configs/experiment/<your_experiment_name>.yaml`. See `experiment_demo.yaml` as
-    an example. For multi-gpu training overwrite the `gpus:` variable that is set to 1 in `base_experiment.yaml`.
+    an example. For multi-gpu training overwrite the `devices:` variable that is set to 1 in `base_experiment.yaml`.
 10. Install this repository into your conda environment with `pip install -e .`.
 11. Start the training with e.g. 
     `CUDA_VISIBLE_DEVICES=0 python train.py data=<your_dataset_name> experiment=<your_experiment_name>`
@@ -140,3 +140,11 @@ the data my dataset returns and as they are expected by mamoe in `models/mamoe`.
 
 During training there will be samples generated and saved to disk or wandb. These samples where used to
 generate the scores in the thesis and are presented in the thesis.
+
+## Acknowledgments
+
+TODO
+
+## Citation
+
+TODO
