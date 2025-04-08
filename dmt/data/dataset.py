@@ -1,5 +1,4 @@
 import csv
-import json
 import re
 import random
 import logging
@@ -67,7 +66,6 @@ class BaseDataset(Dataset):
         # Init image paths for dataset
         self.load_additional: List[Callable] = []
         self.prompts = {}
-        self.instance_prompts = {}
         self.image_paths = []
         self.update_image_paths()
 
