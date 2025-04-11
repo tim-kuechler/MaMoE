@@ -31,12 +31,12 @@ class LitBaseModule(LightningModule):
         model_name: str,
         unet: UNetWrapper,
         vae: VaeWrapper,
-        optimizer: Union[partial, List[partial]],
-        scheduler: Union[partial, List[partial]],
+        optimizer: partial,
+        scheduler: partial,
         # Loss settings
         loss_type: str = "mse",
         perc_ckpt_path: Optional[str] = None,
-        snr_gamma: Optional[float] = 1.0,
+        snr_gamma: Optional[float] = None,
         # Noise scheduler settings
         zero_snr: bool = False,
         prediction_type: str = "epsilon",
@@ -46,7 +46,30 @@ class LitBaseModule(LightningModule):
         gradient_checkpointing: bool = False,
         allow_tf32: bool = True,
         matmul_precision: Optional[str] = "high",
+        continue_epoch: Optional[int] = None,
+        continue_step: Optional[int] = None,
     ) -> None:
+        """Init the Training Loop
+
+        :param model_name: The Huggingface model repository of the model that was loaded.
+        :param unet: A UnetWrapper around an initialized model (is initialized by hydra).
+        :param vae: A VaeWrapper around an initialized VAE (is initialized by hydra).
+        :param optimizer: A partial function that initializes the optimizer and only misses trainable parameters.
+        :param scheduler: A partial function that initializes the LR scheduler and only misses trainable parameters.
+        :param loss_type: Training loss. Either "mse", "perc" or "lpips".
+        :param perc_ckpt_path: Ckpt to load for the perceptual feature descriptor (if loss is "perc").
+        :param snr_gamma: Loss weighting factor for MinSNR.
+        :param zero_snr: If true, use ZeroSNR fix (in this case prediction_type must be "v_prediction").
+        :param prediction_type: The prediction type of the model, either "epsilon" or "v_prediction"
+            (maybe "sample" also works).
+        :param timestep_spacing: The timestep spacing during sampling. Refer to ZeroSNR paper for explanation and modes.
+        :param gradient_accumulation: How many training steps are accumulated before a backpropagation.
+        :param gradient_checkpointing: If true, activate gradient checkpointing to trade of speed for VRAM.
+        :param allow_tf32: If true, train with tensorfloat32.
+        :param matmul_precision: Define PyTorch's matrix multiplication precision.
+        :param continue_epoch: Optional. If set start with this epoch (e.g. to continue training).
+        :param continue_step: Optional. If set start with this training step. Also, epoch and step can be set both.
+        """
         super().__init__()
 
         self.unet_wrapper = unet
@@ -60,6 +83,8 @@ class LitBaseModule(LightningModule):
         self.gradient_checkpointing = gradient_checkpointing
         self.allow_tf32 = allow_tf32
         self.matmul_precision = matmul_precision
+        self.continue_epoch = continue_epoch
+        self.continue_step = continue_step
 
         # Init loss
         self.lpips = None
@@ -124,6 +149,41 @@ class LitBaseModule(LightningModule):
             # Torch Matmul precision
             if self.matmul_precision is not None:
                 th.set_float32_matmul_precision(self.matmul_precision)
+
+    ################ Code to set start epoch and step to continue training ################
+    @override
+    def on_train_start(self) -> None:
+        if self.continue_epoch is not None or self.continue_step is not None:
+            if self.continue_epoch is None:
+                self.continue_epoch = 0
+
+            # Set epoch
+            if self.continue_epoch > 0:
+                self.trainer.fit_loop.epoch_progress.current.completed = self.continue_epoch
+                self.trainer.fit_loop.epoch_progress.current.processed = self.continue_epoch
+                assert self.current_epoch == self.continue_epoch, f"{self.current_epoch} != {self.continue_epoch}"
+
+            # Set batch id
+            if self.continue_step is not None:
+                total_batch_idx = self.continue_step
+            else:
+                total_batch_idx = self.current_epoch * len(self.trainer.train_dataloader)
+            self.trainer.fit_loop.epoch_loop.batch_progress.total.ready = total_batch_idx + 1
+            self.trainer.fit_loop.epoch_loop.batch_progress.total.completed = total_batch_idx
+            assert self.trainer.fit_loop.epoch_loop.total_batch_idx + 1 == total_batch_idx + 1, \
+                f"{self.trainer.fit_loop.epoch_loop.total_batch_idx + 1} != {total_batch_idx + 1}"
+
+            # Set global step
+            global_step = total_batch_idx
+            self.trainer.fit_loop.epoch_loop.manual_optimization.optim_step_progress.total.completed = global_step
+            self.trainer.fit_loop.epoch_loop.automatic_optimization.optim_progress.optimizer.step.total.completed = global_step
+            assert self.global_step == global_step, f"{self.global_step} != {global_step}"
+
+            # Tick LR Scheduler for every epoch
+            for i in range(self.current_epoch):
+                self.lr_schedulers().step()
+
+    ################################################################################
 
     @override
     def on_train_epoch_end(self) -> None:
@@ -269,16 +329,11 @@ class LitBaseModule(LightningModule):
         :return: Optimizer and scheduler
         """
         # Init optimizers
-        assert not isinstance(self.partial_optimizer, list), \
-            "Normal diffusion training only supports one optimizer!"
         params = self.get_params()
         optimizer = self.partial_optimizer(params=params)
         del self.partial_optimizer
 
         # Init schedulers
-        assert not isinstance(self.partial_scheduler, list), \
-            "Normal diffusion training only supports one scheduler!"
-
         # Remove unsupported arguments that are there due to hydras inheritance scheme
         if (self.partial_scheduler.func == th.optim.lr_scheduler.CosineAnnealingLR or
                 self.partial_scheduler.func == th.optim.lr_scheduler.LinearLR):

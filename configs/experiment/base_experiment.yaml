@@ -9,14 +9,14 @@ callbacks:
   model_checkpoint: # Settings for BaseModelCheckpoint in callbacks.py
     every_n_epochs: 5
   image_logger: # Settings for BaseImageLogger in callbacks.py
-    sampling_freq: 2297 # in trainig steps. Adapt to your dataset
+    sampling_freq: 2297 # in training steps. Adapt to your dataset
     num_batches: 2
     sampling_batch_size: 5 # Batch size that is used during sampling. Should be smaller than training bs to avoid OOM.
     cond: true
     uncond: true
     cfg: true
   eval_callback: # Settings for BaseEvalCallback in callbacks.py
-    eval_freq: 4594 # in trainig steps. Adapt to your dataset
+    eval_freq: 4594 # in training steps. Adapt to your dataset
     eval_cmmd: true
     eval_fid: false
     eval_kid: false
@@ -67,7 +67,7 @@ data: # Here any parameters from lightning_data.py can be set
 logger: # Here any logger that is supported by pytorch lightning can be set. Most likely only wandb will work correctly with the custom callbacks defined in callbacks.py
   wandb: # Wandb logger settings. Can be removed if wandb is not used
     project: dm-training # Name of your wandb project
-    name: ${experiment.task_name} # Same value as set above for task_name
+    name: ${task_name} # Same value as set above for task_name
 
 trainer: # Here all parameters for pytorch lightning's Trainer class can be set
   max_epochs: 40
@@ -83,7 +83,11 @@ model: # Not complete. Can set any parameter from lightning.py's __init___
 
   gradient_checkpointing: true # Use gradient checkpointing. XFormers is automatically used if installed in conda environment.
 
+  # continue_epoch: <int> # Set the starting epoch to e.g. continue training from a ckpt.
+  # continue_step: <int> # Set the starting step to e.g. continue training from a ckpt. Also, epoch and step can be set both at the same time.
+
   # unet: Here all parameters to initialize the UNet (e.g. add ControlNet or LoRA) can be set. For possible parameters refer to init_unet(...) in unet.py
+    # ckpt_path: <dir_of_ckpt_that_should_be_loaded_or_continued_from>
     # ...
 
   optimizer:
